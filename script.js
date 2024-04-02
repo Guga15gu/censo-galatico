@@ -1,6 +1,31 @@
 let planet_buttons = document.getElementById('planet_buttons');
 printPlanets();
 
+async function searchPlanet(){
+    let search_input = document.getElementById('search_input');
+    let search_planet_name = search_input.value;
+
+    let planet_response = await fetch(`https://swapi.dev/api/planets/?search=${encodeURIComponent(search_planet_name)}`);
+    let planet = await planet_response.json();
+
+    if (planet.count === 0) {
+        let planet_details_div = document.getElementById('planet_details');
+        planet_details_div.innerHTML = "<div>Planeta não encontrado</div>";
+    } 
+    else {
+        let planet_data = planet.results[0];
+        
+        await getPlanetDetails(planet_data.name);
+
+        let planet_found_div = document.createElement('div');
+        planet_found_div.textContent = 'Planeta Encontrado';
+        
+        let planet_details_div = document.getElementById('planet_details');
+        planet_details_div.prepend(planet_found_div);
+    }
+
+}
+
 async function printPlanets(){
 
     let planets_response = await fetch('https://swapi.dev/api/planets?format=json');
