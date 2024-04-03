@@ -1,9 +1,24 @@
 let planet_buttons = document.getElementById('planet_buttons');
 printPlanets();
 
-async function createListResidents(residents_url_array){
+async function createTableResidents(residents_url_array){
 
-    let residents_ul = document.createElement('ul');
+    let residents_table = document.createElement('table');
+    let residents_table_thead = document.createElement('thead');
+    let residents_table_thead_tr = document.createElement('tr');
+    
+    let name_th = document.createElement('th');
+    name_th.textContent = 'Nome';
+    residents_table_thead_tr.appendChild(name_th);
+
+    let birth_year_th = document.createElement('th');
+    birth_year_th.textContent = 'Ano de Nascimento';
+    residents_table_thead_tr.appendChild(birth_year_th);
+
+    residents_table_thead.appendChild(residents_table_thead_tr);
+    residents_table.appendChild(residents_table_thead);
+
+    let residents_table_tbody = document.createElement('tbody');
     residents_url_array.forEach ( async resident_url => {
 
         let resident_response = await fetch(resident_url);
@@ -11,19 +26,29 @@ async function createListResidents(residents_url_array){
         let resident = await resident_response.json();
         console.log(resident);
 
-        let resident_li = document.createElement('li');
-        resident_li.textContent = `Nome: ${resident.name}, data de nascimento: ${resident.birth_year}`;
-        residents_ul.appendChild(resident_li);
+        let residents_table_tr = document.createElement('tr');
+
+        let resident_name_td = document.createElement('td');
+        resident_name_td.textContent = resident.name;
+        residents_table_tr.appendChild(resident_name_td);
+
+        let resident_birth_year_td = document.createElement('td');
+        resident_birth_year_td.textContent = resident.birth_year;
+        residents_table_tr.appendChild(resident_birth_year_td);
+
+        residents_table_tbody.appendChild(residents_table_tr);
     });
 
-    return residents_ul;
+    residents_table.appendChild(residents_table_tbody);
+
+    return residents_table;
 }
 
 async function searchPlanet(){
     let search_input = document.getElementById('search_input');
     let search_planet_name = search_input.value;
 
-    let planet_response = await fetch(`https://swapi.dev/api/planets/?search=${encodeURIComponent(search_planet_name)}?format=json`);
+    let planet_response = await fetch(`https://swapi.dev/api/planets/?search=${encodeURIComponent(search_planet_name)}`);
     let planet = await planet_response.json();
 
     if (planet.count === 0) {
@@ -92,8 +117,15 @@ async function getPlanetDetails(planetName){
     h3_residents.textContent = 'Habitantes Famosos';
     new_planet_details_div.appendChild(h3_residents);
     
-    let residents_ul = await createListResidents(planet.residents);
-    new_planet_details_div.appendChild(residents_ul);
+    if(planet.residents.length > 0){
+        let residents_ul = await createTableResidents(planet.residents);
+        new_planet_details_div.appendChild(residents_ul);
+    }
+    else{
+        let not_residents_div = document.createElement('div');
+        not_residents_div.textContent = 'Não há habitantes famosos';
+        new_planet_details_div.appendChild(not_residents_div);
+    }
 
     let planet_details = document.getElementById('planet_details');
     planet_details.replaceWith(new_planet_details_div);
