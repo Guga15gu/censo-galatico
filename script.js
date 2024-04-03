@@ -1,11 +1,29 @@
 let planet_buttons = document.getElementById('planet_buttons');
 printPlanets();
 
+async function createListResidents(residents_url_array){
+
+    let residents_ul = document.createElement('ul');
+    residents_url_array.forEach ( async resident_url => {
+
+        let resident_response = await fetch(resident_url);
+        console.log(resident_response);
+        let resident = await resident_response.json();
+        console.log(resident);
+
+        let resident_li = document.createElement('li');
+        resident_li.textContent = `Nome: ${resident.name}, data de nascimento: ${resident.birth_year}`;
+        residents_ul.appendChild(resident_li);
+    });
+
+    return residents_ul;
+}
+
 async function searchPlanet(){
     let search_input = document.getElementById('search_input');
     let search_planet_name = search_input.value;
 
-    let planet_response = await fetch(`https://swapi.dev/api/planets/?search=${encodeURIComponent(search_planet_name)}`);
+    let planet_response = await fetch(`https://swapi.dev/api/planets/?search=${encodeURIComponent(search_planet_name)}?format=json`);
     let planet = await planet_response.json();
 
     if (planet.count === 0) {
@@ -44,11 +62,12 @@ async function printPlanets(){
     });
 }
 
-async function getPlanetDetails(planetName) {
+async function getPlanetDetails(planetName){
 
     let planet_response = await fetch(`https://swapi.dev/api/planets/?search=${encodeURIComponent(planetName)}`);
     let planet_data = await planet_response.json();
     let planet = planet_data.results[0];
+    console.log(planet)
     
     let new_planet_details_div = document.createElement('div');
     new_planet_details_div.id = 'planet_details';
@@ -68,6 +87,13 @@ async function getPlanetDetails(planetName) {
     let div_terrain = document.createElement('div');
     div_terrain.textContent = `Terreno: ${planet.terrain}`;
     new_planet_details_div.appendChild(div_terrain);
+
+    let h3_residents = document.createElement('h3');
+    h3_residents.textContent = 'Habitantes Famosos';
+    new_planet_details_div.appendChild(h3_residents);
+    
+    let residents_ul = await createListResidents(planet.residents);
+    new_planet_details_div.appendChild(residents_ul);
 
     let planet_details = document.getElementById('planet_details');
     planet_details.replaceWith(new_planet_details_div);
